@@ -7,11 +7,11 @@ from airflow.operators.python import PythonOperator
 import pandas as pd
 
 def CSVtoJSON():
-    df=pd.read_csv('data.csv')
+    df=pd.read_csv('data.CSV')
     for i,r in df.iterrows():
         print(r['name'])
     df.to_json('fromAirflow.JSON', orient='records')
-    
+
 # arguments for Airflow
 default_args = {
     'owner': 'BinKim',
@@ -33,11 +33,13 @@ with DAG('MyCSVDAG',
          schedule_interval=timedelta(minutes=5), # or something like '0 * * * *'
          ) as dag:
 
-    print_starting = BashOperator(task_id='starting,', 
+    print_starting = BashOperator(task_id='starting',
                                   bash_command='echo "Reading CSV..."')
     CSVJson = PythonOperator(task_id='convertCSVtoJson',
-                             python_callable=CSVToJson # calling the function created above
+                             python_callable=CSVtoJSON # calling the function created above
                              )
+
+print_starting.set_downstream(CSVJson)
 
 ''' making connections between tasks
 print_starting.set_downstream(CSVJson)
@@ -47,6 +49,5 @@ CSVJson << print_starting
 
 All 4 lines above mean the same.
 
-However, write in consistent manner. 
+However, write in consistent manner.
 '''
-
